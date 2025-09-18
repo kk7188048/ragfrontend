@@ -1,0 +1,226 @@
+@use '../variables' as vars;
+
+.main-layout {
+  min-height: 100vh;
+  background: linear-gradient(135deg, 
+    rgba(66, 153, 225, 0.05) 0%, 
+    rgba(72, 187, 120, 0.05) 100%
+  );
+  
+  .dark & {
+    background: linear-gradient(135deg, 
+      rgba(26, 32, 44, 1) 0%, 
+      rgba(45, 55, 72, 1) 100%
+    );
+  }
+
+  @media (max-width: vars.$tablet) {
+    background: none;
+  }
+}
+
+.sidebar {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.9);
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  
+  .dark & {
+    background: rgba(26, 32, 44, 0.9);
+    border-right-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .sidebar-header {
+    padding: $spacing-lg;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    
+    .dark & {
+      border-bottom-color: rgba(255, 255, 255, 0.05);
+    }
+  }
+
+  .sidebar-content {
+    padding: $spacing-md;
+    overflow-y: auto;
+    height: calc(100vh - 80px);
+    
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+  }
+
+  .sidebar-section {
+    margin-bottom: $spacing-lg;
+    
+    .section-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: $spacing-sm;
+      color: var(--chakra-colors-gray-500);
+    }
+  }
+
+  .connection-indicator {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-sm;
+    border-radius: $spacing-sm;
+    font-size: 0.75rem;
+    
+    &.connected {
+      background: rgba(72, 187, 120, 0.1);
+      color: var(--chakra-colors-green-600);
+      
+      .dark & {
+        background: rgba(72, 187, 120, 0.2);
+        color: var(--chakra-colors-green-300);
+      }
+    }
+    
+    &.disconnected {
+      background: rgba(237, 137, 54, 0.1);
+      color: var(--chakra-colors-orange-600);
+      
+      .dark & {
+        background: rgba(237, 137, 54, 0.2);
+        color: var(--chakra-colors-orange-300);
+      }
+    }
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-sm;
+    
+    .stat-item {
+      text-align: center;
+      padding: $spacing-sm;
+      border-radius: $spacing-sm;
+      background: rgba(0, 0, 0, 0.02);
+      
+      .dark & {
+        background: rgba(255, 255, 255, 0.02);
+      }
+      
+      .stat-value {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--chakra-colors-blue-500);
+      }
+      
+      .stat-label {
+        font-size: 0.75rem;
+        color: var(--chakra-colors-gray-500);
+      }
+    }
+  }
+}
+
+.chat-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: $chat-max-width;
+  margin: 0 auto;
+  
+  @media (min-width: $desktop) {
+    padding: $spacing-lg;
+    height: calc(100vh - #{$spacing-2xl});
+    border-radius: $spacing-lg;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    background: white;
+    
+    .dark & {
+      background: var(--chakra-colors-gray-800);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+  }
+  
+  @media (max-width: $tablet) {
+    height: 100vh;
+    padding: 0;
+  }
+}
+
+// Mobile responsive adjustments
+@media (max-width: $tablet) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100vh;
+    z-index: $z-sidebar;
+    transform: translateX(-100%);
+    transition: transform $transition-normal;
+    
+    &.open {
+      transform: translateX(0);
+    }
+  }
+  
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: $z-sidebar - 1;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity $transition-normal;
+    
+    &.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+}
+
+// Animation classes
+.slide-in-left {
+  animation: slideInLeft $transition-normal ease-out;
+}
+
+.slide-out-left {
+  animation: slideOutLeft $transition-normal ease-in;
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutLeft {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+// Focus management for accessibility
+.sidebar:focus-within {
+  outline: 2px solid var(--chakra-colors-blue-500);
+  outline-offset: -2px;
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .sidebar {
+    border-right-width: 2px;
+    
+    .connection-indicator {
+      border: 1px solid currentColor;
+    }
+  }
+}

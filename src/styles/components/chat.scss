@@ -1,0 +1,198 @@
+@use '../variables' as vars;
+
+.chat-container {
+  .chat-header {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.8);
+    
+    .dark & {
+      background: rgba(26, 32, 44, 0.8);
+    }
+  }
+
+  .chat-messages {
+    background: vars.$gradient-chat;
+    
+    .dark & {
+      background: linear-gradient(to bottom, #1a202c, #2d3748);
+    }
+  }
+
+  .empty-chat-state {
+    background: radial-gradient(ellipse at center, rgba(66, 153, 225, 0.05) 0%, transparent 70%);
+  }
+}
+
+.message-bubble {
+  animation: fadeInUp vars.$transition-normal;
+  
+  &.user-message {
+    .message-content {
+      background: vars.$gradient-primary;
+      box-shadow: 0 2px 12px rgba(49, 130, 206, 0.3);
+      
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba(49, 130, 206, 0.4);
+        transition: all vars.$transition-fast;
+      }
+    }
+  }
+
+  &.bot-message {
+    .message-content {
+      background: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      
+      .dark & {
+        background: var(--chakra-colors-gray-700);
+        border-color: var(--chakra-colors-gray-600);
+      }
+      
+      &:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-1px);
+        transition: all vars.$transition-fast;
+        
+        .copy-button {
+          opacity: 1;
+        }
+      }
+    }
+  }
+}
+
+// Rest of your chat styles...
+.typing-indicator {
+  animation: fadeInUp $transition-normal;
+  
+  .typing-dot {
+    animation: typing 1.4s infinite ease-in-out;
+    
+    &:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    
+    &:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+  }
+}
+
+.chat-input {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.9);
+  
+  .dark & {
+    background: rgba(26, 32, 44, 0.9);
+  }
+
+  textarea {
+    transition: all $transition-normal;
+    
+    &:focus {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(66, 153, 225, 0.2);
+    }
+  }
+
+  .suggestion-chips {
+    .suggestion-chip {
+      background: rgba(66, 153, 225, 0.1);
+      border: 1px solid rgba(66, 153, 225, 0.2);
+      transition: all $transition-fast;
+      
+      &:hover {
+        background: rgba(66, 153, 225, 0.2);
+        transform: translateY(-1px);
+      }
+    }
+  }
+}
+
+// Streaming cursor animation
+.cursor-blink {
+  animation: blink 1s infinite;
+  color: var(--chakra-colors-blue-500);
+  font-weight: bold;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+// Responsive design
+@media (max-width: $tablet) {
+  .message-bubble {
+    .message-content {
+      max-width: calc(100vw - 80px);
+      font-size: 14px;
+    }
+  }
+
+  .chat-input {
+    .suggestion-chips {
+      flex-direction: column;
+      align-items: stretch;
+      
+      .suggestion-chip {
+        text-align: left;
+        justify-content: flex-start;
+      }
+    }
+  }
+}
+
+// Accessibility improvements
+@media (prefers-reduced-motion: reduce) {
+  .message-bubble,
+  .typing-indicator,
+  .fade-in-up {
+    animation: none;
+  }
+
+  .message-content,
+  .chat-input textarea,
+  .suggestion-chip {
+    transition: none;
+    
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+// Focus indicators for keyboard navigation
+.chakra-button:focus,
+.chakra-textarea:focus,
+.chakra-switch:focus {
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.6);
+}
+
+// Loading states
+.loading-message {
+  .message-content {
+    background: linear-gradient(90deg, 
+      rgba(226, 232, 240, 0.5) 25%, 
+      rgba(226, 232, 240, 1) 50%, 
+      rgba(226, 232, 240, 0.5) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+    
+    .dark & {
+      background: linear-gradient(90deg, 
+        rgba(74, 85, 104, 0.5) 25%, 
+        rgba(74, 85, 104, 1) 50%, 
+        rgba(74, 85, 104, 0.5) 75%
+      );
+    }
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
