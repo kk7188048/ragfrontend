@@ -3,6 +3,7 @@ import { useToast } from '@chakra-ui/react';
 import { v4 as uuidv4 } from 'uuid';
 import apiService from '../services/apiService';
 import { useSocket } from './useSocket';
+import { useChatPersistence } from './useLocalStorage';
 
 export const useChat = () => {
   const [sessionId, setSessionId] = useState(null);
@@ -11,13 +12,87 @@ export const useChat = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState(null);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [isRestoringSession, setIsRestoringSession] = useState(true);
 
   const toast = useToast();
   const { socket, isConnected } = useSocket();
   const abortControllerRef = useRef(null);
 
-  // Initialize session
-  const initializeSession = useCallback(async () => {
+  // Persistence hooks
+  const {
+    persistedSession,
+    persistedMessages,
+    saveSession,
+    saveMessages,
+    clearPersistedData,
+    isSessionValid
+  } = useChatPersistence();
+
+  // Restore session and messages on app load
+  useEffect(() => {
+    const restoreSession = async () => {
+      try {
+        setIsRestoringSession(true);
+
+        // Check if we have a valid persisted session
+        if (persistedSession && isSessionValid()) {
+          console.log('🔄 Restoring session:', persistedSession.sessionId);
+          
+          // Restore sessionId
+          setSessionId(persistedSession.sessionId);
+          
+          // Restore messages
+          if (persistedMessages && persistedMessages.length > 0) {
+            console.log(`📚 Restored ${persistedMessages.length} messages from localStorage`);
+            setMessages(persistedMessages);
+          }
+
+          // Verify session is still valid on backend
+          try {
+            if (isConnected) {
+              // For Socket.IO, just set the session
+              socket.sessionId = persistedSession.sessionId;
+            } else {
+              // For REST API, verify session exists
+              await apiService.getChatHistory(persistedSession.sessionId);
+            }
+            
+            toast({
+              title: 'Session Restored',
+              description: `Welcome back! Restored ${persistedMessages.length} messages.`,
+              status: 'success',
+              duration: 3000,
+              isClosable: true,
+            });
+          } catch (error) {
+            console.warn('🔄 Persisted session invalid on backend, creating new session');
+            clearPersistedData();
+            await initializeNewSession();
+          }
+        } else {
+          // No valid session, create new one
+          await initializeNewSession();
+        }
+      } catch (error) {
+        console.error('Error restoring session:', error);
+        await initializeNewSession();
+      } finally {
+        setIsRestoringSession(false);
+      }
+    };
+
+    restoreSession();
+  }, [isConnected]); // Only run when connection status changes
+
+  // Save messages to localStorage whenever messages change
+  useEffect(() => {
+    if (messages.length > 0 && sessionId) {
+      saveMessages(messages);
+    }
+  }, [messages, sessionId, saveMessages]);
+
+  // Initialize new session
+  const initializeNewSession = useCallback(async () => {
     try {
       setIsLoading(true);
       
@@ -27,8 +102,10 @@ export const useChat = () => {
       } else {
         // Use REST API
         const response = await apiService.createSession();
-        setSessionId(response.sessionId);
-        console.log('Session created:', response.sessionId);
+        const newSessionId = response.sessionId;
+        setSessionId(newSessionId);
+        saveSession(newSessionId);
+        console.log('✅ New session created:', newSessionId);
       }
     } catch (error) {
       console.error('Failed to create session:', error);
@@ -44,9 +121,9 @@ export const useChat = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isConnected, socket, toast]);
+  }, [isConnected, socket, saveSession, toast]);
 
-  // Send message
+  // Send message (unchanged, but now messages auto-save)
   const sendMessage = useCallback(async (message, useStreaming = false) => {
     if (!sessionId || !message.trim()) return;
 
@@ -146,7 +223,7 @@ export const useChat = () => {
     }
   }, [sessionId, isConnected, socket, toast]);
 
-  // Clear chat
+  // Clear chat - now also clears localStorage
   const clearChat = useCallback(async () => {
     if (!sessionId) return;
 
@@ -155,16 +232,19 @@ export const useChat = () => {
         socket.clearSession(sessionId);
       } else {
         await apiService.clearSession(sessionId);
-        setMessages([]);
-        
-        toast({
-          title: 'Chat Cleared',
-          description: 'All messages have been cleared',
-          status: 'info',
-          duration: 2000,
-          isClosable: true,
-        });
       }
+      
+      // Clear local state and localStorage
+      setMessages([]);
+      clearPersistedData();
+      
+      toast({
+        title: 'Chat Cleared',
+        description: 'All messages have been cleared',
+        status: 'info',
+        duration: 2000,
+        isClosable: true,
+      });
     } catch (error) {
       console.error('Failed to clear chat:', error);
       
@@ -176,9 +256,9 @@ export const useChat = () => {
         isClosable: true,
       });
     }
-  }, [sessionId, isConnected, socket, toast]);
+  }, [sessionId, isConnected, socket, clearPersistedData, toast]);
 
-  // Load chat history
+  // Load chat history from backend (fallback)
   const loadHistory = useCallback(async () => {
     if (!sessionId) return;
 
@@ -198,13 +278,14 @@ export const useChat = () => {
     }
   }, [sessionId, isConnected, socket]);
 
-  // Socket event handlers
+  // Socket event handlers (with persistence)
   useEffect(() => {
     if (!isConnected) return;
 
     const handleSessionCreated = (data) => {
       setSessionId(data.sessionId);
-      console.log('Socket session created:', data.sessionId);
+      saveSession(data.sessionId);
+      console.log('✅ Socket session created and saved:', data.sessionId);
     };
 
     const handleMessageReceived = (data) => {
@@ -232,6 +313,7 @@ export const useChat = () => {
 
     const handleSessionCleared = () => {
       setMessages([]);
+      clearPersistedData();
       
       toast({
         title: 'Chat Cleared',
@@ -274,14 +356,7 @@ export const useChat = () => {
       socket.off('session_cleared', handleSessionCleared);
       socket.off('error', handleError);
     };
-  }, [isConnected, socket, toast]);
-
-  // Initialize session on mount
-  useEffect(() => {
-    if (!sessionId) {
-      initializeSession();
-    }
-  }, [sessionId, initializeSession]);
+  }, [isConnected, socket, saveSession, clearPersistedData, toast]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -298,11 +373,12 @@ export const useChat = () => {
     isLoading,
     isTyping,
     isStreaming,
+    isRestoringSession,
     error,
     isConnected,
     sendMessage,
     clearChat,
     loadHistory,
-    initializeSession,
+    initializeSession: initializeNewSession,
   };
 };
