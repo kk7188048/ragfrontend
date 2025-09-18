@@ -17,7 +17,7 @@ class SocketService {
     }
 
     return new Promise((resolve, reject) => {
-      console.log('🔌 Connecting to Socket.IO server...');
+      console.log('Connecting to Socket.IO server...');
 
       this.socket = io(SOCKET_URL, {
         transports: ['websocket', 'polling'],
@@ -28,14 +28,14 @@ class SocketService {
       });
 
       this.socket.on('connect', () => {
-        console.log('✅ Connected to Socket.IO server');
+        console.log('Connected to Socket.IO server');
         this.isConnected = true;
         this.reconnectAttempts = 0;
         resolve();
       });
 
       this.socket.on('connect_error', (error) => {
-        console.error('❌ Socket connection error:', error);
+        console.error('Socket connection error:', error);
         this.isConnected = false;
         
         if (this.reconnectAttempts >= this.maxReconnectAttempts) {
@@ -44,26 +44,26 @@ class SocketService {
       });
 
       this.socket.on('disconnect', (reason) => {
-        console.log('🔌 Disconnected from Socket.IO server:', reason);
+        console.log('Disconnected from Socket.IO server:', reason);
         this.isConnected = false;
       });
 
       this.socket.on('reconnect', (attemptNumber) => {
-        console.log(`🔄 Reconnected to Socket.IO server (attempt ${attemptNumber})`);
+        console.log(`Reconnected to Socket.IO server (attempt ${attemptNumber})`);
         this.isConnected = true;
         this.reconnectAttempts = 0;
       });
 
       this.socket.on('reconnect_error', (error) => {
         this.reconnectAttempts++;
-        console.error(`❌ Reconnection attempt ${this.reconnectAttempts} failed:`, error);
+        console.error(`Reconnection attempt ${this.reconnectAttempts} failed:`, error);
       });
     });
   }
 
   disconnect() {
     if (this.socket) {
-      console.log('🔌 Disconnecting from Socket.IO server');
+      console.log('Disconnecting from Socket.IO server');
       this.socket.disconnect();
       this.socket = null;
       this.isConnected = false;
@@ -76,7 +76,7 @@ class SocketService {
       throw new Error('Socket not connected');
     }
     
-    console.log('📝 Creating new session');
+    console.log('Creating new session');
     this.socket.emit('create_session');
   }
 
@@ -85,7 +85,7 @@ class SocketService {
       throw new Error('Socket not connected');
     }
 
-    console.log('💬 Sending message:', message);
+    console.log('Sending message:', message);
     this.socket.emit('send_message', { sessionId, message });
   }
 
@@ -94,7 +94,7 @@ class SocketService {
       throw new Error('Socket not connected');
     }
 
-    console.log('📚 Requesting chat history');
+    console.log('Requesting chat history');
     this.socket.emit('get_history', { sessionId });
   }
 
@@ -103,7 +103,7 @@ class SocketService {
       throw new Error('Socket not connected');
     }
 
-    console.log('🗑️ Clearing session');
+    console.log('Clearing session');
     this.socket.emit('clear_session', { sessionId });
   }
 

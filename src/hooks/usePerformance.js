@@ -9,7 +9,7 @@ export const usePerformance = () => {
       const result = await fn(...args);
       const end = performance.now();
       
-      console.log(`⚡ ${name} took ${(end - start).toFixed(2)}ms`);
+      console.log(`${name} took ${(end - start).toFixed(2)}ms`);
       return result;
     };
   }, []);
@@ -18,7 +18,7 @@ export const usePerformance = () => {
   const trackMemoryUsage = useCallback(() => {
     if ('memory' in performance) {
       const memory = performance.memory;
-      console.log('📊 Memory Usage:', {
+      console.log('Memory Usage:', {
         used: `${(memory.usedJSHeapSize / 1048576).toFixed(2)} MB`,
         total: `${(memory.totalJSHeapSize / 1048576).toFixed(2)} MB`,
         limit: `${(memory.jsHeapSizeLimit / 1048576).toFixed(2)} MB`,
@@ -46,11 +46,11 @@ export const usePerformance = () => {
 // Hook for optimizing re-renders
 export const useRenderOptimization = (componentName) => {
   useEffect(() => {
-    console.log(`🎨 ${componentName} rendered at ${new Date().toLocaleTimeString()}`);
+    console.log(`${componentName} rendered at ${new Date().toLocaleTimeString()}`);
   });
 
   const logRerender = useCallback((reason) => {
-    console.log(`🔄 ${componentName} re-rendered: ${reason}`);
+    console.log(`${componentName} re-rendered: ${reason}`);
   }, [componentName]);
 
   return { logRerender };

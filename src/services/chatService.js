@@ -14,10 +14,10 @@ class ChatService {
     try {
       // Try to connect to Socket.IO first
       await socketService.connect();
-      console.log('✅ Chat service initialized with Socket.IO');
+      console.log('Chat service initialized with Socket.IO');
       return { mode: 'socket', connected: true };
     } catch (error) {
-      console.warn('⚠️ Socket.IO unavailable, using REST API');
+      console.warn('Socket.IO unavailable, using REST API');
       return { mode: 'rest', connected: false };
     }
   }
@@ -65,7 +65,6 @@ class ChatService {
       type: 'user',
     };
 
-    // Add to queue
     this.messageQueue.push(messageData);
 
     try {
@@ -78,7 +77,7 @@ class ChatService {
       }
     } catch (error) {
       if (retries > 0) {
-        console.log(`🔄 Retrying message send (${retries} attempts left)`);
+        console.log(`Retrying message send (${retries} attempts left)`);
         return this.sendMessage(message, { ...options, retries: retries - 1 });
       }
       
@@ -91,12 +90,10 @@ class ChatService {
     return new Promise((resolve, reject) => {
       socketService.sendMessage(messageData.sessionId, messageData.content);
 
-      // Handle typing indicator
       socketService.onBotTyping((isTyping) => {
         if (onProgress) onProgress({ type: 'typing', isTyping });
       });
 
-      // Handle response
       socketService.onMessageReceived((response) => {
         const botMessage = {
           id: generateMessageId(),
@@ -110,12 +107,10 @@ class ChatService {
         resolve(botMessage);
       });
 
-      // Handle errors
       socketService.onError((error) => {
         reject(new Error(error.message));
       });
 
-      // Timeout after 30 seconds
       setTimeout(() => {
         reject(new Error('Socket response timeout'));
       }, 30000);

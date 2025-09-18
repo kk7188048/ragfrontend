@@ -5,10 +5,8 @@ import theme from './styles/themes/chakra-theme';
 import Layout from './components/Layout/Layout';
 import ErrorBoundary from './components/Common/ErrorBoundary';
 
-// Import global styles directly
 import './styles/globals.scss';
 
-// Create a client for React Query
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

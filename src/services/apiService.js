@@ -12,32 +12,29 @@ class ApiService {
       },
     });
 
-    // Request interceptor
     this.client.interceptors.request.use(
       (config) => {
-        console.log(`🌐 API Request: ${config.method?.toUpperCase()} ${config.url}`);
+        console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
         return config;
       },
       (error) => {
-        console.error('📡 API Request Error:', error);
+        console.error('API Request Error:', error);
         return Promise.reject(error);
       }
     );
 
-    // Response interceptor
     this.client.interceptors.response.use(
       (response) => {
-        console.log(`✅ API Response: ${response.config.url}`, response.data);
+        console.log(`API Response: ${response.config.url}`, response.data);
         return response;
       },
       (error) => {
-        console.error('❌ API Response Error:', error.response?.data || error.message);
+        console.error('API Response Error:', error.response?.data || error.message);
         return Promise.reject(error);
       }
     );
   }
 
-  // Health check
   async healthCheck() {
     try {
       const response = await this.client.get('/health');
@@ -47,7 +44,6 @@ class ApiService {
     }
   }
 
-  // Session management
   async createSession() {
     try {
       const response = await this.client.post('/api/chat/session');
@@ -66,7 +62,6 @@ class ApiService {
     }
   }
 
-  // Chat operations
   async sendMessage(sessionId, message) {
     try {
       const response = await this.client.post('/api/chat/message', {
@@ -88,7 +83,6 @@ class ApiService {
     }
   }
 
-  // System stats
   async getStats() {
     try {
       const response = await this.client.get('/api/chat/stats');
@@ -98,7 +92,6 @@ class ApiService {
     }
   }
 
-  // Streaming message (Server-Sent Events)
   async *sendStreamingMessage(sessionId, message) {
     try {
       const response = await fetch(`${API_BASE_URL}/api/chat/message/stream`, {

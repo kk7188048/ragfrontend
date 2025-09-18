@@ -28,7 +28,7 @@ export const useChat = () => {
         // Use REST API
         const response = await apiService.createSession();
         setSessionId(response.sessionId);
-        console.log('✅ Session created:', response.sessionId);
+        console.log('Session created:', response.sessionId);
       }
     } catch (error) {
       console.error('Failed to create session:', error);
@@ -204,7 +204,7 @@ export const useChat = () => {
 
     const handleSessionCreated = (data) => {
       setSessionId(data.sessionId);
-      console.log('✅ Socket session created:', data.sessionId);
+      console.log('Socket session created:', data.sessionId);
     };
 
     const handleMessageReceived = (data) => {

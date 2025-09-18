@@ -43,7 +43,6 @@ const ChatHeader = ({
       className="chat-header"
     >
       <Flex align="center" justify="space-between">
-        {/* Left Section */}
         <HStack spacing={3}>
           <IconButton
             icon={<FiMenu />}
@@ -81,7 +80,6 @@ const ChatHeader = ({
           </Box>
         </HStack>
 
-        {/* Right Section */}
         <HStack spacing={2}>
           {messageCount > 0 && (
             <Tooltip label={`${messageCount} messages`}>

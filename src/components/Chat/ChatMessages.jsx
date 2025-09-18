@@ -17,7 +17,6 @@ const ChatMessages = ({ messages, isTyping, isStreaming }) => {
   const bgColor = useColorModeValue('gray.50', 'gray.900');
   const emptyStateColor = useColorModeValue('gray.500', 'gray.400');
 
-  // Empty state
   if (messages.length === 0 && !isTyping) {
     return (
       <Flex
